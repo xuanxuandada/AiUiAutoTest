@@ -6,7 +6,12 @@
 
 
 
-<video src="F:\WXWork\1688856340868196\Cache\Video\2026-08\新建智能报价.mp4"></video>
+
+
+https://github.com/user-attachments/assets/3f3da4fd-cbc0-40ee-92e2-6b9241aabb59
+
+
+
 
 视频演示
 
