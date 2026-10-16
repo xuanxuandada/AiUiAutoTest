@@ -1,0 +1,61 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Midscene Runner
+midscene-runner/node_modules/
+midscene-runner/midscene_run/
+midscene-runner/.env
+!midscene-runner/.env.example
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+/screenshots/
+/reports/
+
+# Scratch / debug artifacts (仅保留在本地，禁止提交)
+/batch_latest.json
+/batch_status.json
+/bs2.json
+/bs3.json
+/case_detail.json
+/check_runner.js
+/check_status.js
+/dirs.txt
+/insert_case.ps1
+/new_batch.json
+/new_batch_id.txt
+/rs2.json
+/rs_new.json
+/run_all.bat
+/run_test.ps1
+/runner_status.json
+/submit2.txt
+/test_runner.js
+/testcase.json
+/u3.txt
+/update3_out.txt
+/verify_out.txt
+midscene-runner/u1.txt
+midscene-runner/u2.txt
+midscene-runner/uploads/upload-test.txt

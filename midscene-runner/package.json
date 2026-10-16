@@ -1,0 +1,16 @@
+{
+  "name": "midscene-runner",
+  "version": "1.0.0",
+  "description": "Midscene.js Test Runner for AI Test Platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@midscene/web": "latest",
+    "@playwright/test": "^1.61.0",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "playwright": "latest"
+  }
+}

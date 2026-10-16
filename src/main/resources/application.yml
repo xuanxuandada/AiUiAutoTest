@@ -1,0 +1,110 @@
+server:
+  port: 8080
+  tomcat:
+    max-http-form-post-size: 20MB
+    max-swallow-size: 20MB
+
+spring:
+  application:
+    name: yx-test-AiTest
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test_case?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+    username: root
+    # 本地开发默认口令为 123456；若设置了环境变量 DB_PASSWORD，则以环境变量为准（生产环境必须覆盖）。
+    # 注意：这是本机调试用的弱口令，切勿连同真实库一起推送到远程仓库。
+    password: ${DB_PASSWORD:123456}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+    # runner回传的Playwright HTML报告base64较大（实测34MB+），需放宽Jackson字符串解析上限
+    stream-read-constraints:
+      max-string-length: 104857600  # 100MB，默认仅20MB
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/init.sql
+      continue-on-error: true
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    # 日志实现从 StdOutImpl 换成 Slf4jImpl。
+    # StdOutImpl 是直接 System.out.println，绕过日志体系和日志级别，
+    # 意味着 SQL 一定打印；换到 Slf4j 后遵循日志级别，
+    # 生产环境（root=INFO）就不会把带参数的 SQL 刷进日志文件，
+    # 避免 AI Key 之类敏感数据随 SQL 写入磁盘。
+    # 本地想看 SQL 调试时，把下面 logging 里的包级别改成 debug 即可。
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# 日志级别配置
+# 保持 root 为 INFO：这样上面换成 Slf4jImpl 后，mapper 的 DEBUG 级 SQL 默认不输出。
+# 需要排查 SQL 时，把 com.yx.test.mapper 临时改成 debug，不用改代码。
+logging:
+  level:
+    root: INFO
+    com.yx.test.mapper: INFO
+
+# AI大模型配置（默认模板，不含任何密钥）
+# 说明：每个登录用户自己的 API Key 存放在数据库表 user_ai_config 中，
+#      通过 /api/user/ai-config 接口维护，按登录用户隔离、互不可见。
+#      【系统不提供全局兜底 Key】用户没配自己的 Key，AI 功能就直接报错提示，
+#      绝不会静默地用上别人的、或全员的 Key。
+# 本段剩下的都是「非敏感项」，只作为新建用户配置时的默认模板，
+# 让用户只需要粘贴一把自己的 Key，地址/模型/超时自动带默认值。
+ai:
+  api:
+    # 注意：OpenAI兼容接口完整路径必须以 /chat/completions 结尾，否则Java后端调用返回404
+    url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+    model: qwen-vl-max
+    # Midscene（浏览器自动化）要求多模态模型族，取值如 qwen2.5-vl / doubao-vision / gemini
+    model-family: qwen2.5-vl
+    timeout: 60
+
+# 阿里云OSS配置
+aliyun:
+  oss:
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    # OSS 密钥同样从环境变量读，默认空值。
+    # 仓库里写死真实 Key，一旦推到远程就等于公开了自己的阿里云账号。
+    access-key-id: ${OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+    bucket-name: web-cest-tlias
+    region: cn-hangzhou
+
+# JWT配置
+jwt:
+  # JWT 签名密钥从环境变量 JWT_SECRET 读取；生产环境必须用强随机值覆盖。
+  # 这个密钥一旦泄露，别人就能自己伪造出任意用户的 token，直接绕过整个登录体系。
+  # 下方默认值仅为本地开发占位符，严禁用于任何真实部署。
+  secret: ${JWT_SECRET:dev-only-placeholder-replace-with-strong-random-secret-please}
+  expiration: 86400000  # 24小时（毫秒）
+
+# 关闭 Swagger / OpenAPI 文档
+# 开启时任何人都能访问 /swagger-ui.html、/v3/api-docs，
+# 把后端全部接口（含参数结构）列个清单摆在公网上，相当于给攻击者派了一张地图。
+# 这两个配置只影响文档页面，不影响任何业务接口，前端无需调整。
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Midscene.js Runner配置
+midscene:
+  runner:
+    url: http://localhost:3001
+    timeout: 120
+
+# 报告/截图产物存储配置
+app:
+  artifact:
+    # 测试报告(HTML)与截图(PNG)分开存放在 G:\aitest 下的两个子目录。
+    # ⚠️ 必须与 midscene-runner 的 BACKEND_REPORT_DIR / BACKEND_SCREENSHOT_DIR 保持一致
+    #    （两端同机共享文件系统），否则 Runner 写入与后端读取对不上，前端打开会 404。
+    # 可用环境变量 APP_REPORT_DIR / APP_SCREENSHOT_DIR 覆盖。
+    report-dir: ${APP_REPORT_DIR:G:/aitest/reports}
+    screenshot-dir: ${APP_SCREENSHOT_DIR:G:/aitest/screenshots}
